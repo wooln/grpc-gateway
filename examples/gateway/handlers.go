@@ -11,19 +11,55 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
-// swaggerServer returns swagger specification files located under "/swagger/"
+// // swaggerServer returns swagger specification files located under "/swagger/"
+// func swaggerServer(dir string) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		if !strings.HasSuffix(r.URL.Path, ".swagger.json") {
+// 			glog.Errorf("Not Found: %s", r.URL.Path)
+// 			http.NotFound(w, r)
+// 			return
+// 		}
+
+// 		glog.Infof("Serving %s", r.URL.Path)
+// 		p := strings.TrimPrefix(r.URL.Path, "/swagger/")
+// 		p = path.Join(dir, p)
+// 		http.ServeFile(w, r, p)
+// 	}
+// }
+
+// swaggerServer returns swagger specification files located under "/swagger/". +包含swagger-ui目录,或把ui编译成go
+
 func swaggerServer(dir string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasSuffix(r.URL.Path, ".swagger.json") {
-			glog.Errorf("Not Found: %s", r.URL.Path)
-			http.NotFound(w, r)
-			return
-		}
-
 		glog.Infof("Serving %s", r.URL.Path)
 		p := strings.TrimPrefix(r.URL.Path, "/swagger/")
-		p = path.Join(dir, p)
-		http.ServeFile(w, r, p)
+
+		// p = path.Join(dir, p)
+		// http.ServeFile(w, r, p)
+		// return
+
+		//如果请求的是json,则使用ServerFile返回文档josn
+		if strings.HasSuffix(r.URL.Path, ".json") {			
+			p = path.Join(dir, p)
+			http.ServeFile(w, r, p)
+		}else{
+			//否则就是请求的/swagger/swagger-ui/xx, 从编译的go资源中获取
+			data, err := Asset(p)
+			if(err != nil){
+				glog.Errorf("Not Found Asset: %s", p)
+			}
+			contentTypeMap := make(map[string]string)
+			contentTypeMap[".html"] = "text/html"
+			contentTypeMap[".htm"] = "text/html"
+			contentTypeMap[".js"] = "application/javascript"
+			contentTypeMap[".css"] = "text/css"			
+			fileSuffix := path.Ext(p) //获取文件名带后缀
+			contentType := contentTypeMap[fileSuffix];
+			if(contentType != ""){
+				w.Header().Set("Content-Type",contentType)
+			}
+			w.Write(data)			
+		}		
 	}
 }
 

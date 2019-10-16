@@ -29,11 +29,9 @@ Then you can use curl or a browser to test:
 $ curl http://localhost:8080/swagger/echo_service.swagger.json
 
 # Visit the apis
-$ curl -XPOST http://localhost:8080/v1/example/echo/foo
-{"id":"foo"}
+$ curl -XPOST http://localhost:8080/v1/example/echo/foo {"id":"foo"}
 
-$ curl  http://localhost:8080/v1/example/echo/foo/123
-{"id":"foo","num":"123"}
+$ curl  http://localhost:8080/v1/example/echo/foo/123 {"id":"foo","num":"123"}
 
 ```
 
